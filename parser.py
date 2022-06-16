@@ -9,18 +9,35 @@ def get_html(url, params=None):
     res = requests.get(URL, headers)
     return res
 
+def get_pages_count(html):
+    soup = BeautifulSoup(html, 'lxml')
+    pagination = soup.find('span', class_='Button__content').find_next('span').text
+    if pagination:
+        return int(pagination)
+    else:
+        return 1
+    print(pagination)
 
 def get_content(html):
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, 'lxml')
     items = soup.find_all('div', class_='ListingItem__description')
-    print(items)
+    cars = []
+    for item in items:
+        cars.append({
+            'title': item.find('h3', class_='ListingItemTitle ListingItem__title').get_text(strip=True),
+            'link': item.find('a', class_='Link ListingItemTitle__link').get('href'),
+            'price': item.find('div', class_='ListingItemPrice__content').find_next('span').text
+        })
+    return cars
+
 
 
 def parse():
     html = get_html(URL)
     print(html)
     if html.status_code == 200:
-        get_content(html.text)
+        get_pages_count(html.text)
+        #get_content(html.text)
     else:
         print('error')
 
